@@ -1,11 +1,190 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Alticonception</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur de Prix Textile</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #34495e;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+
+    .marquage-buttons button {
+      display: inline-block;
+      margin: 5px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #ecf0f1;
+      font-size: 0.95em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .marquage-buttons button.selected {
+      background-color: #3498db;
+      color: white;
+      border-color: #2980b9;
+    }
+
+    button.calculate {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      width: 100%;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button.calculate:hover {
+      background-color: #2980b9;
+      transform: scale(1.03);
+    }
+
+    .result {
+      font-size: 1.2em;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      background: #e8f8f5;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+  </style>
 </head>
 <body>
-  <h1>Bienvenue sur le site d'Alticonception !</h1>
-  <p>Textiles personnalisés & goodies en bois.</p>
+  <h1>🧵 Calculateur Textile</h1>
+  <div class="container">
+    <div class="form-group">
+      <label for="article">Article</label>
+      <select id="article">
+        <option value="10">Sol's 140g</option>
+        <option value="11.5">Sol's 190g</option>
+        <option value="15">Polo Sol's</option>
+        <option value="11.5">Sport monocouleur</option>
+        <option value="12.75">Sport Bicolor</option>
+        <option value="14.5">Oversize 140g</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Marquages</label>
+      <div class="marquage-buttons" id="marquage-buttons">
+        <button data-value="4">Cœur</button>
+        <button data-value="4">Opposé au cœur</button>
+        <button data-value="6.5">Centre torse</button>
+        <button data-value="4.5">Haut dos</button>
+        <button data-value="6.5">Centre dos</button>
+        <button data-value="4">Manche</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="quantite">Quantité d'articles</label>
+      <input type="number" id="quantite" value="1" min="1">
+    </div>
+
+    <button class="calculate" onclick="calculerPrix()">🧮 Calculer le prix</button>
+
+    <div class="result" id="resultat"></div>
+  </div>
+
+  <script>
+    const boutonsMarquage = document.querySelectorAll("#marquage-buttons button");
+    boutonsMarquage.forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("selected");
+      });
+    });
+
+    function getRemiseProduit(qte) {
+      if (qte >= 250) return -0.20;
+      if (qte >= 100) return -0.15;
+      if (qte >= 40) return -0.10;
+      if (qte >= 10) return -0.05;
+      if (qte >= 5) return -0.03;
+      return 0;
+    }
+
+    function getRemiseMarquage(nb) {
+      if (nb === 5) return -0.15;
+      if (nb === 4) return -0.13;
+      if (nb === 3) return -0.07;
+      if (nb === 2) return -0.03;
+      return 0;
+    }
+
+    function calculerPrix() {
+      const article = parseFloat(document.getElementById("article").value);
+      const quantite = parseInt(document.getElementById("quantite").value);
+      const marquages = document.querySelectorAll("#marquage-buttons button.selected");
+
+      let totalMarquages = 0;
+      marquages.forEach(m => totalMarquages += parseFloat(m.dataset.value));
+
+      let prixUnitaire = article + totalMarquages;
+      const remiseProduit = getRemiseProduit(quantite);
+      const remiseMarquage = getRemiseMarquage(marquages.length);
+      const remiseTotale = remiseProduit + remiseMarquage;
+      const prixAvecRemise = prixUnitaire * (1 + remiseTotale);
+      const total = prixAvecRemise * quantite;
+
+      document.getElementById("resultat").innerHTML =
+        `⭐ Prix unitaire après remise : <strong>${prixAvecRemise.toFixed(2)} €</strong><br>
+         💸 Total pour ${quantite} article(s) : <strong>${total.toFixed(2)} €</strong>`;
+    }
+  </script>
 </body>
 </html>
